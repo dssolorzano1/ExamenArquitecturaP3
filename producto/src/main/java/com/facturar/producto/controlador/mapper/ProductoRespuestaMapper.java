@@ -10,14 +10,12 @@ import org.mapstruct.*;
 )
 public interface ProductoRespuestaMapper {
 
-    // Mapeo de Entidad a DTO
     @Mapping(target = "codProducto", source = "codProducto")
     @Mapping(target = "nombre", source = "nombre")
     @Mapping(target = "existencia", source = "existencia")
     @Mapping(target = "precio", source = "precio")
     ProductoRespuestaDTO toDto(Producto producto);
 
-    // Mapeo de DTO a Entidad
     @Mapping(target = "codProducto", source = "codProducto")
     @Mapping(target = "nombre", source = "nombre")
     @Mapping(target = "existencia", source = "existencia")

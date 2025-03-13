@@ -3,11 +3,10 @@ package com.facturar.producto.modelo;
 import lombok.Data;
 import lombok.ToString;
 import java.math.BigDecimal;
-
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.MongoId;
 import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.mongodb.core.mapping.FieldType;
-import org.springframework.data.mongodb.core.mapping.MongoId;
 
 @Data
 @ToString
@@ -24,11 +23,4 @@ public class Producto {
 
     @Field(targetType = FieldType.DECIMAL128)
     private BigDecimal precio;
-
-    public Producto(String codProducto, String nombre, Integer existencia, BigDecimal precio) {
-        this.codProducto = codProducto;
-        this.nombre = nombre;
-        this.existencia = existencia;
-        this.precio = precio;
-    }
 }

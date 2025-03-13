@@ -6,6 +6,7 @@ import com.facturar.facturacion.modelo.Factura;
 import com.facturar.facturacion.repositorio.FacturaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -17,24 +18,39 @@ public class FacturaService {
     @Autowired
     private FacturaRepository facturaRepository;
 
+    @Autowired
+    private RestTemplate restTemplate;
+
+    private static final String PRODUCTO_SERVICE_URL = "http://localhost:8081/productos/{codigo}";
+
     public Factura crearFactura(FacturaCabeceraDTO cabecera) {
-        
         BigDecimal subtotal = BigDecimal.ZERO;
         BigDecimal iva = BigDecimal.ZERO;
         BigDecimal total = BigDecimal.ZERO;
 
         for (FacturaDetalleDTO detalle : cabecera.getDetalles()) {
-            BigDecimal precioUnitario = BigDecimal.valueOf(20.00); // Simulación
+            ProductoDTO producto = restTemplate.getForObject(PRODUCTO_SERVICE_URL, ProductoDTO.class, detalle.getCodProducto());
+
+            if (producto == null) {
+                throw new RuntimeException("Producto no encontrado: " + detalle.getCodProducto());
+            }
+
+            if (producto.getExistencia() < detalle.getCantidad()) {
+                throw new RuntimeException("No hay suficiente stock para el producto: " + detalle.getCodProducto());
+            }
+
+            BigDecimal precioUnitario = producto.getPrecio();
             BigDecimal cantidad = BigDecimal.valueOf(detalle.getCantidad());
 
-            BigDecimal sub = precioUnitario.multiply(cantidad);
-            BigDecimal ivaDetalle = sub.multiply(BigDecimal.valueOf(0.12)); // 12% IVA
+            BigDecimal subtotalDetalle = precioUnitario.multiply(cantidad);
+            BigDecimal ivaDetalle = subtotalDetalle.multiply(BigDecimal.valueOf(0.12)); // 12% IVA
+            BigDecimal totalDetalle = subtotalDetalle.add(ivaDetalle);
 
-            subtotal = subtotal.add(sub);
+            subtotal = subtotal.add(subtotalDetalle);
             iva = iva.add(ivaDetalle);
-        }
+            total = total.add(totalDetalle);
 
-        total = subtotal.add(iva);
+        }
 
         Factura factura = new Factura(
                 cabecera.getTipoIdentificacion(),
@@ -49,5 +65,21 @@ public class FacturaService {
         factura.setCodFactura(UUID.randomUUID().toString());
 
         return facturaRepository.save(factura);
+    }
+
+    static class ProductoDTO {
+        private String codProducto;
+        private String nombre;
+        private Integer existencia;
+        private BigDecimal precio;
+
+        public String getCodProducto() { return codProducto; }
+        public void setCodProducto(String codProducto) { this.codProducto = codProducto; }
+        public String getNombre() { return nombre; }
+        public void setNombre(String nombre) { this.nombre = nombre; }
+        public Integer getExistencia() { return existencia; }
+        public void setExistencia(Integer existencia) { this.existencia = existencia; }
+        public BigDecimal getPrecio() { return precio; }
+        public void setPrecio(BigDecimal precio) { this.precio = precio; }
     }
 }

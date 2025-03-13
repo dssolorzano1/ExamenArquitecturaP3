@@ -1,6 +1,5 @@
 package com.facturar.producto.dto;
 
-
 import lombok.Data;
 
 @Data
