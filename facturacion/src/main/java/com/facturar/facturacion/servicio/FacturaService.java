@@ -43,7 +43,7 @@ public class FacturaService {
             BigDecimal cantidad = BigDecimal.valueOf(detalle.getCantidad());
 
             BigDecimal subtotalDetalle = precioUnitario.multiply(cantidad);
-            BigDecimal ivaDetalle = subtotalDetalle.multiply(BigDecimal.valueOf(0.12)); // 12% IVA
+            BigDecimal ivaDetalle = subtotalDetalle.multiply(BigDecimal.valueOf(0.15));
             BigDecimal totalDetalle = subtotalDetalle.add(ivaDetalle);
 
             subtotal = subtotal.add(subtotalDetalle);
